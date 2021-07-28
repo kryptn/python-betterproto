@@ -1219,6 +1219,26 @@ class Message(ABC):
         """
         return self.from_dict(json.loads(value))
 
+    @classmethod
+    def from_file(cls: Type[T], filename: str) -> T:
+        with open(filename, "rb") as fd:
+            content = fd.read()
+        instance = cls()
+
+        if "json" in filename:
+            return instance.from_json(content)
+        else:
+            return instance.parse(content)
+
+    def to_file(self: T, filename: str, **kwargs):
+        if "json" in filename:
+            indent = kwargs.get("indent")
+            with open(filename, "w") as fh:
+                json.dump(self.to_json(indent=indent), fh)
+        else:
+            with open(filename, "wb") as fh:
+                fh.write(bytes(self))
+
 
 def serialized_on_wire(message: Message) -> bool:
     """
